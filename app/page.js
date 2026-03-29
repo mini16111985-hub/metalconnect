@@ -1,227 +1,299 @@
-export default function Home() {
-  const articles = [
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+
+export default function HomePage() {
+  const [featuredCompanies, setFeaturedCompanies] = useState([]);
+  const [companiesLoading, setCompaniesLoading] = useState(true);
+
+  const highlights = [
     {
-      title: "Croatia as a Manufacturing Partner for European Companies",
-      excerpt:
-        "How Croatian metal manufacturers can become reliable nearshoring partners for EU buyers.",
+      title: "RFQ marketplace",
+      text: "Buyers can submit RFQs with drawings and receive supplier offers through one platform.",
     },
     {
-      title: "CNC Capabilities in Croatia: What International Buyers Should Expect",
-      excerpt:
-        "An overview of common machining capabilities, production strengths, and collaboration expectations.",
+      title: "Croatian supplier directory",
+      text: "Discover Croatian manufacturers by capability, material, and production focus.",
     },
     {
-      title: "How to Prepare a Proper RFQ for Metal Manufacturing",
-      excerpt:
-        "A practical guide for buyers who want faster quotes and fewer production misunderstandings.",
+      title: "Private buyer review",
+      text: "Buyers receive email notifications and compare offers in a private view.",
     },
   ];
 
-  const categories = [
-    "CNC Milling",
-    "CNC Turning",
-    "5-Axis Machining",
-    "Laser Cutting",
-    "Welding",
-    "Sheet Metal Fabrication",
-    "Toolmaking",
-    "Surface Treatment",
+  const stats = [
+    { value: "B2B", label: "focused manufacturing platform" },
+    { value: "EU ↔ HR", label: "buyer-supplier connection" },
+    { value: "RFQ", label: "from request to offer" },
   ];
 
-  const companies = [
-    {
-      name: "Sample Precision d.o.o.",
-      city: "Zagreb",
-      services: "CNC Milling, CNC Turning",
-      materials: "Steel, Stainless Steel, Aluminum",
-    },
-    {
-      name: "Adriatic Metal Works",
-      city: "Rijeka",
-      services: "Welding, Sheet Metal Fabrication",
-      materials: "Steel, Aluminum",
-    },
-    {
-      name: "North Axis CNC",
-      city: "Varaždin",
-      services: "5-Axis Machining, Prototyping",
-      materials: "Aluminum, Engineering Plastics",
-    },
-  ];
+  useEffect(() => {
+    const fetchFeaturedCompanies = async () => {
+      const { data, error } = await supabase
+        .from("companies_pending")
+        .select("*")
+        .eq("status", "Approved")
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      if (error) {
+        console.error("Error fetching featured companies:", error);
+      } else {
+        setFeaturedCompanies(data || []);
+      }
+
+      setCompaniesLoading(false);
+    };
+
+    fetchFeaturedCompanies();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <div>
-            <div className="text-2xl font-bold tracking-tight">MetalConnect</div>
-            <div className="text-sm text-slate-600">
-              Connecting Croatian manufacturers with European buyers
-            </div>
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      <section className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-2 md:py-24">
+        <div className="flex flex-col justify-center">
+          <div className="mb-4 inline-flex w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
+            Industrial sourcing platform • Croatia → Europe
           </div>
-          <nav className="hidden gap-6 text-sm md:flex">
-            <a href="#directory" className="hover:text-slate-600">Directory</a>
-            <a href="#articles" className="hover:text-slate-600">Articles</a>
-            <a href="#buyers" className="hover:text-slate-600">For Buyers</a>
-            <a href="#manufacturers" className="hover:text-slate-600">For Manufacturers</a>
-            <a href="#advertise" className="hover:text-slate-600">Advertise</a>
-          </nav>
+
+          <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
+            Connect European buyers with Croatian metal manufacturers.
+          </h1>
+
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+            MetalConnect helps buyers submit RFQs, compare supplier offers,
+            and discover Croatian manufacturing companies in one place.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-4">
+            <a
+              href="/submit-rfq"
+              className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm"
+            >
+              Submit RFQ →
+            </a>
+
+            <a
+              href="/rfq"
+              className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 hover:bg-slate-100"
+            >
+              Browse RFQs
+            </a>
+
+            <a
+              href="/companies"
+              className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 hover:bg-slate-100"
+            >
+              Explore companies
+            </a>
+          </div>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            {stats.map((stat) => (
+              <div key={stat.label} className="rounded-3xl border bg-white p-5 shadow-sm">
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <div className="mt-2 text-sm text-slate-600">{stat.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
-      </header>
 
-      <main>
-        <section className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-2 md:py-24">
-          <div className="flex flex-col justify-center">
-            <div className="mb-4 inline-flex w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
-              Industrial portal • Croatia → EU
+        <div className="grid gap-4">
+          <div className="rounded-3xl border bg-white p-8 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              For Buyers
             </div>
-            <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-              Discover Croatian metal manufacturers in one place.
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
-              MetalConnect is a digital platform for showcasing Croatian metalworking companies,
-              publishing industrial insights, and building future connections with buyers across Europe.
+            <h2 className="mt-3 text-2xl font-bold">Send one RFQ, receive multiple offers.</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Submit project details, attach drawings, and receive supplier offers
+              without contacting each manufacturer one by one.
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <a
-                href="#directory"
-                className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm"
-              >
-                Explore Directory
-              </a>
-              <a
-                href="#buyers"
-                className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900"
-              >
-                For Buyers
-              </a>
-            </div>
+
+            <a
+              href="/buyers"
+              className="mt-6 inline-block rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white"
+            >
+              Buyer flow →
+            </a>
           </div>
 
-          <div className="grid gap-4">
-            <div className="rounded-3xl border bg-white p-6 shadow-sm">
-              <div className="text-sm font-semibold text-slate-500">Launch focus</div>
-              <div className="mt-2 text-2xl font-bold">Croatian manufacturing directory</div>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                Start with a strong Croatian supplier base, industrial articles, and a simple buyer-request flow.
-              </p>
+          <div className="rounded-3xl border bg-white p-8 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              For Manufacturers
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-3xl border bg-white p-6 shadow-sm">
-                <div className="text-3xl font-bold">300+</div>
-                <div className="mt-2 text-sm text-slate-600">Target companies in the first phase</div>
-              </div>
-              <div className="rounded-3xl border bg-white p-6 shadow-sm">
-                <div className="text-3xl font-bold">5</div>
-                <div className="mt-2 text-sm text-slate-600">Launch articles already prepared</div>
-              </div>
-            </div>
+            <h2 className="mt-3 text-2xl font-bold">Discover relevant RFQs and submit offers.</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Browse approved RFQs, review attached drawings, and send structured
+              offers directly through the platform.
+            </p>
+
+            <a
+              href="/manufacturers"
+              className="mt-6 inline-block rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 hover:bg-slate-100"
+            >
+              Manufacturer flow →
+            </a>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section id="directory" className="border-y bg-white">
-          <div className="mx-auto max-w-7xl px-6 py-16">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div>
-                <h2 className="text-3xl font-bold tracking-tight">Manufacturer Directory</h2>
-                <p className="mt-3 max-w-2xl text-slate-600">
-                  A structured overview of Croatian metalworking companies with capabilities, materials, and production focus.
-                </p>
-              </div>
-              <div className="rounded-2xl bg-slate-100 px-4 py-2 text-sm text-slate-600">
-                Starter demo with sample profiles
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-wrap gap-3">
-              {categories.map((category) => (
-                <span
-                  key={category}
-                  className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700"
-                >
-                  {category}
-                </span>
-              ))}
-            </div>
-
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
-              {companies.map((company) => (
-                <article key={company.name} className="rounded-3xl border bg-slate-50 p-6 shadow-sm">
-                  <div className="text-xl font-semibold">{company.name}</div>
-                  <div className="mt-1 text-sm text-slate-500">{company.city}, Croatia</div>
-                  <div className="mt-5">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Services</div>
-                    <div className="mt-2 text-sm leading-6 text-slate-700">{company.services}</div>
-                  </div>
-                  <div className="mt-4">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Materials</div>
-                    <div className="mt-2 text-sm leading-6 text-slate-700">{company.materials}</div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="articles" className="mx-auto max-w-7xl px-6 py-16">
+      <section className="border-y bg-white">
+        <div className="mx-auto max-w-7xl px-6 py-16">
           <div className="max-w-2xl">
-            <h2 className="text-3xl font-bold tracking-tight">Latest Industry Articles</h2>
-            <p className="mt-3 text-slate-600">
-              Educational and market-focused content designed to build trust with both manufacturers and European buyers.
+            <h2 className="text-3xl font-bold tracking-tight">
+              Built for industrial sourcing
+            </h2>
+            <p className="mt-4 text-slate-600">
+              MetalConnect is designed for practical manufacturing workflows:
+              RFQs, drawings, offers, supplier discovery, and buyer comparison in one place.
             </p>
           </div>
+
           <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {articles.map((article) => (
-              <article key={article.title} className="rounded-3xl border bg-white p-6 shadow-sm">
-                <h3 className="text-xl font-semibold leading-7">{article.title}</h3>
-                <p className="mt-4 text-sm leading-6 text-slate-600">{article.excerpt}</p>
-                <div className="mt-6 text-sm font-medium">Read article →</div>
+            {highlights.map((item) => (
+              <article
+                key={item.title}
+                className="rounded-3xl border bg-slate-50 p-8 shadow-sm"
+              >
+                <h3 className="text-xl font-semibold">{item.title}</h3>
+                <p className="mt-4 text-sm leading-6 text-slate-600">{item.text}</p>
               </article>
             ))}
           </div>
-        </section>
-
-        <section id="buyers" className="bg-slate-900 text-white">
-          <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:grid-cols-2">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight">For European Buyers</h2>
-              <p className="mt-4 max-w-xl text-slate-300">
-                Discover Croatian suppliers with flexible production, EU logistics advantages, and strong metalworking expertise.
-              </p>
-            </div>
-            <div className="rounded-3xl border border-slate-700 bg-slate-800 p-6">
-              <div className="text-sm font-semibold uppercase tracking-wide text-slate-400">Planned next step</div>
-              <div className="mt-3 text-2xl font-bold">Buyer Request Form</div>
-              <p className="mt-3 text-sm leading-6 text-slate-300">
-                In phase one, requests can be collected through a simple form and manually matched with relevant Croatian manufacturers.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section id="manufacturers" className="mx-auto max-w-7xl px-6 py-16">
-          <div className="grid gap-8 md:grid-cols-2">
-            <div className="rounded-3xl border bg-white p-8 shadow-sm">
-              <h2 className="text-2xl font-bold">For Manufacturers</h2>
-              <p className="mt-4 text-slate-600">
-                Join the MetalConnect directory and improve your visibility with buyers, engineers, and procurement teams looking for Croatian manufacturing partners.
-              </p>
-            </div>
-            <div id="advertise" className="rounded-3xl border bg-white p-8 shadow-sm">
-              <h2 className="text-2xl font-bold">Advertising Opportunities</h2>
-              <p className="mt-4 text-slate-600">
-                Future monetization will focus on tool shops, machinery suppliers, CAM software, and industrial equipment partners targeting the Croatian metal industry.
-              </p>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="border-t bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-8 text-sm text-slate-500">
-          © 2026 MetalConnect. Independent industrial platform connecting Croatian manufacturers with European buyers.
         </div>
-      </footer>
-    </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-16">
+        <div className="flex items-end justify-between gap-6">
+          <div>
+            <div className="mb-4 inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
+              Featured companies
+            </div>
+
+            <h2 className="text-3xl font-bold tracking-tight">
+              Approved manufacturers on MetalConnect
+            </h2>
+
+            <p className="mt-4 max-w-2xl text-slate-600">
+              Explore selected approved companies from the MetalConnect supplier directory.
+            </p>
+          </div>
+
+          <a
+            href="/companies"
+            className="hidden rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 hover:bg-slate-100 md:inline-block"
+          >
+            View all companies
+          </a>
+        </div>
+
+        {companiesLoading ? (
+          <div className="mt-10 rounded-3xl border bg-white p-8 shadow-sm">
+            <p className="text-slate-600">Loading featured companies...</p>
+          </div>
+        ) : featuredCompanies.length === 0 ? (
+          <div className="mt-10 rounded-3xl border bg-white p-8 shadow-sm">
+            <p className="text-slate-600">
+              No approved companies are featured yet.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {featuredCompanies.map((company) => (
+              <article
+                key={company.id}
+                className="rounded-3xl border bg-white p-8 shadow-sm transition hover:shadow-md"
+              >
+                <a href={`/companies/${company.slug}`} className="block">
+                  <div className="mb-4 flex h-12 items-center">
+                    {company.logo_url ? (
+                      <img
+                        src={company.logo_url}
+                        alt={company.name}
+                        className="h-10 object-contain"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-200 text-sm font-semibold text-slate-600">
+                        {company.name?.charAt(0)?.toUpperCase() || "C"}
+                      </div>
+                    )}
+                  </div>
+
+                  <h3 className="text-2xl font-semibold">{company.name}</h3>
+
+                  <div className="mt-2 text-sm text-slate-500">
+                    {company.country || "—"}
+                  </div>
+
+                  <p className="mt-4 text-base leading-7 text-slate-600">
+                    {company.description || "No description available."}
+                  </p>
+                </a>
+
+                {company.website && (
+                  <a
+                    href={company.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-block text-sm font-medium text-slate-900 underline"
+                  >
+                    Visit website
+                  </a>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-8 md:hidden">
+          <a
+            href="/companies"
+            className="inline-block rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 hover:bg-slate-100"
+          >
+            View all companies
+          </a>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-16">
+        <div className="rounded-3xl border bg-slate-900 px-8 py-10 text-white shadow-sm">
+          <div className="grid gap-8 md:grid-cols-2 md:items-center">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">
+                Ready to use MetalConnect?
+              </h2>
+              <p className="mt-4 max-w-2xl text-slate-300">
+                Buyers can submit a new RFQ. Manufacturers can browse approved requests
+                and explore Croatian suppliers in the directory.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-4 md:justify-end">
+              <a
+                href="/submit-rfq"
+                className="rounded-2xl bg-white px-5 py-3 text-sm font-medium text-slate-900"
+              >
+                Create RFQ
+              </a>
+
+              <a
+                href="/rfq"
+                className="rounded-2xl border border-slate-600 bg-slate-800 px-5 py-3 text-sm font-medium text-white"
+              >
+                View RFQs
+              </a>
+
+              <a
+                href="/companies"
+                className="rounded-2xl border border-slate-600 bg-slate-800 px-5 py-3 text-sm font-medium text-white"
+              >
+                Supplier directory
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
