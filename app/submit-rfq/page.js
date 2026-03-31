@@ -60,6 +60,7 @@ export default function SubmitRFQPage() {
         .upload(safeFileName, file, {
           cacheControl: "3600",
           upsert: false,
+          contentType: file.type,
         });
 
       if (uploadError) {
