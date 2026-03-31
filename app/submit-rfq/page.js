@@ -53,19 +53,31 @@ export default function SubmitRFQPage() {
     let fileName = null;
 
     if (file) {
-      const safeFileName = `${Date.now()}-${file.name}`;
+      const extension = file.name.split(".").pop()?.toLowerCase() || "bin";
+      const baseName = file.name
+        .replace(/\.[^/.]+$/, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9-_]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      const safeFileName = `rfq/${Date.now()}-${baseName || "file"}.${extension}`;
+
+      const fileBuffer = await file.arrayBuffer();
+      const fileBlob = new Blob([fileBuffer], {
+        type: file.type || "application/octet-stream",
+      });
 
       const { error: uploadError } = await supabase.storage
         .from("rfq-files")
-        .upload(safeFileName, file, {
+        .upload(safeFileName, fileBlob, {
           cacheControl: "3600",
           upsert: false,
-          contentType: file.type,
+          contentType: file.type || "application/octet-stream",
         });
 
       if (uploadError) {
         console.error("Upload error:", uploadError);
-        setUploadError(uploadError.message);
+        setUploadError(uploadError.message || "File upload failed.");
         return;
       }
 
