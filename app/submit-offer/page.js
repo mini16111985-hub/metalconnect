@@ -1,10 +1,10 @@
 "use client";
 
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
 import { supabase } from "../../lib/supabase";
 
-export default function SubmitOfferPage() {
+function SubmitOfferForm() {
   const searchParams = useSearchParams();
   const rfqId = searchParams.get("rfqId");
 
@@ -66,7 +66,7 @@ export default function SubmitOfferPage() {
       return;
     }
 
-    const buyerLink = `https://metalconnect-gamma.vercel.app/buyer/rfq/${rfqData.id}?token=${rfqData.buyer_token}`;
+    const buyerLink = `https://metalconnect-dz31hiny4-nikolas-projects-7ba7ab27.vercel.app/buyer/rfq/${rfqData.id}?token=${rfqData.buyer_token}`;
 
     await fetch("/api/send-rfq-email", {
       method: "POST",
@@ -239,5 +239,21 @@ ${buyerLink}
         </form>
       </section>
     </main>
+  );
+}
+
+export default function SubmitOfferPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-50 text-slate-900">
+          <section className="mx-auto max-w-3xl px-6 py-16 md:py-24">
+            <h1 className="text-3xl font-bold">Loading offer form...</h1>
+          </section>
+        </main>
+      }
+    >
+      <SubmitOfferForm />
+    </Suspense>
   );
 }
