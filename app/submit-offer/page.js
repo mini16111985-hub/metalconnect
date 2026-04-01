@@ -1,33 +1,24 @@
 "use client";
 
-import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 import { supabase } from "../../lib/supabase";
 
-function SubmitOfferContent() {
+export default function SubmitOfferPage() {
   const searchParams = useSearchParams();
-  const rfqSlug = searchParams.get("rfq");
+  const rfqId = searchParams.get("rfqId");
 
   const [form, setForm] = useState({
-    company: "",
+    companyName: "",
+    contactPerson: "",
     email: "",
-    quantity: "",
-    pricePerUnit: "",
-    materialCost: "",
-    finishingCost: "",
-    transportCost: "",
+    price: "",
+    deliveryTime: "",
     message: "",
   });
 
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
-  const parseMoney = (value) => {
-    if (!value) return 0;
-    const normalized = String(value).replace(",", ".").trim();
-    const parsed = Number(normalized);
-    return Number.isNaN(parsed) ? 0 : parsed;
-  };
 
   const handleChange = (e) => {
     setForm({
@@ -36,20 +27,19 @@ function SubmitOfferContent() {
     });
   };
 
-  const total =
-    Number(form.quantity || 0) * parseMoney(form.pricePerUnit) +
-    parseMoney(form.materialCost) +
-    parseMoney(form.finishingCost) +
-    parseMoney(form.transportCost);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
 
+    if (!rfqId) {
+      setErrorMessage("Missing RFQ ID.");
+      return;
+    }
+
     const { data: rfqData, error: rfqError } = await supabase
       .from("rfqs")
-      .select("title, buyer_email, buyer_token")
-      .eq("slug", rfqSlug)
+      .select("id, title, buyer_email, buyer_token")
+      .eq("id", rfqId)
       .single();
 
     if (rfqError || !rfqData) {
@@ -60,15 +50,12 @@ function SubmitOfferContent() {
 
     const { error: insertError } = await supabase.from("offers").insert([
       {
-        rfq_slug: rfqSlug,
-        company: form.company,
+        rfq_id: rfqData.id,
+        company_name: form.companyName,
+        contact_person: form.contactPerson,
         email: form.email,
-        quantity: form.quantity,
-        price_per_unit: parseMoney(form.pricePerUnit),
-        material_cost: parseMoney(form.materialCost),
-        finishing_cost: parseMoney(form.finishingCost),
-        transport_cost: parseMoney(form.transportCost),
-        total: Number(total.toFixed(2)),
+        price: form.price,
+        delivery_time: form.deliveryTime,
         message: form.message,
       },
     ]);
@@ -79,39 +66,43 @@ function SubmitOfferContent() {
       return;
     }
 
-    const rfqTitle = rfqData.title || rfqSlug;
-    const privateLink = `http://localhost:3000/buyer/rfq/${rfqSlug}/offers?token=${rfqData.buyer_token}`;
+    const buyerLink = `https://metalconnect-gamma.vercel.app/buyer/rfq/${rfqData.id}?token=${rfqData.buyer_token}`;
 
-    await fetch("/api/send-email", {
+    await fetch("/api/send-rfq-email", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         to: rfqData.buyer_email,
-        subject: `New offer for your RFQ – ${rfqTitle}`,
+        subject: `New offer received – ${rfqData.title}`,
         text: `Hello,
 
 You have received a new supplier offer through MetalConnect.
 
 RFQ:
-${rfqTitle}
+${rfqData.title}
 
 Supplier:
-${form.company}
+${form.companyName}
 
-Offer summary:
-- Quantity: ${form.quantity} pcs
-- Price per unit: ${parseMoney(form.pricePerUnit).toFixed(2)} €
-- Material cost: ${parseMoney(form.materialCost).toFixed(2)} €
-- Finishing cost: ${parseMoney(form.finishingCost).toFixed(2)} €
-- Transport cost: ${parseMoney(form.transportCost).toFixed(2)} €
-- Total: ${total.toFixed(2)} €
+Contact person:
+${form.contactPerson}
 
-View and compare offers here:
-${privateLink}
+Supplier email:
+${form.email}
 
-This is your private buyer link. Please do not share it publicly.
+Price:
+${form.price}
+
+Delivery time:
+${form.deliveryTime}
+
+Message:
+${form.message}
+
+Buyer review link:
+${buyerLink}
 
 — MetalConnect`,
       }),
@@ -124,7 +115,7 @@ This is your private buyer link. Please do not share it publicly.
     return (
       <main className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="rounded-3xl border bg-white p-10 text-center shadow-sm">
-          <h1 className="text-2xl font-semibold">Offer sent ✅</h1>
+          <h1 className="text-2xl font-semibold">Offer submitted ✅</h1>
           <p className="mt-3 text-slate-600">
             Your offer has been submitted successfully.
           </p>
@@ -133,7 +124,7 @@ This is your private buyer link. Please do not share it publicly.
             href="/rfq"
             className="mt-6 inline-block rounded-2xl bg-slate-900 px-5 py-3 text-white"
           >
-            Back to RFQs
+            Back to RFQ board
           </a>
         </div>
       </main>
@@ -142,107 +133,94 @@ This is your private buyer link. Please do not share it publicly.
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <section className="mx-auto max-w-2xl px-6 py-16 md:py-24">
-        <h1 className="text-3xl font-bold">Submit Offer</h1>
+      <section className="mx-auto max-w-3xl px-6 py-16 md:py-24">
+        <div className="mb-6 inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
+          Supplier Offer Form
+        </div>
 
-        <p className="mt-2 text-slate-600">
-          RFQ: <span className="font-medium">{rfqSlug}</span>
+        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+          Submit an offer
+        </h1>
+
+        <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
+          Respond to this RFQ with your pricing, delivery time, and message.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <p className="mt-3 text-sm text-slate-500">
+          RFQ ID: <span className="font-medium">{rfqId || "Missing"}</span>
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-10 space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <label className="text-sm font-medium">Company name</label>
+              <input
+                type="text"
+                name="companyName"
+                required
+                onChange={handleChange}
+                className="mt-2 w-full rounded-xl border px-4 py-3"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Contact person</label>
+              <input
+                type="text"
+                name="contactPerson"
+                required
+                onChange={handleChange}
+                className="mt-2 w-full rounded-xl border px-4 py-3"
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <label className="text-sm font-medium">Email</label>
+              <input
+                type="email"
+                name="email"
+                required
+                onChange={handleChange}
+                className="mt-2 w-full rounded-xl border px-4 py-3"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Price</label>
+              <input
+                type="text"
+                name="price"
+                required
+                onChange={handleChange}
+                className="mt-2 w-full rounded-xl border px-4 py-3"
+                placeholder="e.g. 2.450 EUR"
+              />
+            </div>
+          </div>
+
           <div>
-            <label className="text-sm font-medium">Company name</label>
+            <label className="text-sm font-medium">Delivery time</label>
             <input
               type="text"
-              name="company"
+              name="deliveryTime"
               required
               onChange={handleChange}
               className="mt-2 w-full rounded-xl border px-4 py-3"
+              placeholder="e.g. 21 days"
             />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Email</label>
-            <input
-              type="email"
-              name="email"
-              required
-              onChange={handleChange}
-              className="mt-2 w-full rounded-xl border px-4 py-3"
-            />
-          </div>
-
-          <div className="rounded-2xl border p-6 space-y-4">
-            <h2 className="font-semibold">Pricing breakdown</h2>
-
-            <div>
-              <label className="text-sm">Quantity (pcs)</label>
-              <input
-                type="number"
-                name="quantity"
-                onChange={handleChange}
-                className="mt-1 w-full rounded-xl border px-4 py-2"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm">Price per unit (€)</label>
-              <input
-                type="text"
-                name="pricePerUnit"
-                placeholder="npr. 1,75"
-                onChange={handleChange}
-                className="mt-1 w-full rounded-xl border px-4 py-2"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm">Material cost (€)</label>
-              <input
-                type="text"
-                name="materialCost"
-                placeholder="npr. 2,54"
-                onChange={handleChange}
-                className="mt-1 w-full rounded-xl border px-4 py-2"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm">Finishing cost (€)</label>
-              <input
-                type="text"
-                name="finishingCost"
-                placeholder="npr. 0,80"
-                onChange={handleChange}
-                className="mt-1 w-full rounded-xl border px-4 py-2"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm">Transport cost (€)</label>
-              <input
-                type="text"
-                name="transportCost"
-                placeholder="npr. 125,00"
-                onChange={handleChange}
-                className="mt-1 w-full rounded-xl border px-4 py-2"
-              />
-            </div>
-
-            <div className="pt-2 border-t">
-              <span className="font-semibold text-lg">
-                Total: {total.toFixed(2)} €
-              </span>
-            </div>
           </div>
 
           <div>
             <label className="text-sm font-medium">Message</label>
             <textarea
               name="message"
-              rows="4"
+              rows="6"
+              required
               onChange={handleChange}
               className="mt-2 w-full rounded-xl border px-4 py-3"
+              placeholder="Add any notes, assumptions, or delivery details..."
             />
           </div>
 
@@ -261,21 +239,5 @@ This is your private buyer link. Please do not share it publicly.
         </form>
       </section>
     </main>
-  );
-}
-
-export default function SubmitOfferPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="min-h-screen bg-slate-50 text-slate-900">
-          <section className="mx-auto max-w-2xl px-6 py-16 md:py-24">
-            <h1 className="text-3xl font-bold">Loading...</h1>
-          </section>
-        </main>
-      }
-    >
-      <SubmitOfferContent />
-    </Suspense>
   );
 }
