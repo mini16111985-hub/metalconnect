@@ -115,6 +115,30 @@ export default function SubmitRFQPage() {
       return;
     }
 
+    await fetch("/api/send-rfq-email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        to: form.email,
+        subject: `RFQ received – ${title}`,
+        text: `Hello,
+
+Your RFQ has been submitted successfully through MetalConnect.
+
+RFQ:
+${title}
+
+Status:
+Pending review
+
+We will notify you when your request is reviewed or when new offers arrive.
+
+— MetalConnect`,
+      }),
+    });
+
     setSubmitted(true);
   };
 
