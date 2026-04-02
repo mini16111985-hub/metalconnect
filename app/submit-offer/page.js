@@ -12,7 +12,10 @@ function SubmitOfferForm() {
     companyName: "",
     contactPerson: "",
     email: "",
-    price: "",
+    quantity: "",
+    pricePerUnit: "",
+    finishingCost: "",
+    transportCost: "",
     deliveryTime: "",
     message: "",
   });
@@ -26,6 +29,18 @@ function SubmitOfferForm() {
       [e.target.name]: e.target.value,
     });
   };
+
+  const parseMoney = (value) => {
+    if (!value) return 0;
+    const normalized = String(value).replace(",", ".").trim();
+    const parsed = Number(normalized);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
+  const total =
+    Number(form.quantity || 0) * parseMoney(form.pricePerUnit) +
+    parseMoney(form.finishingCost) +
+    parseMoney(form.transportCost);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,8 +69,12 @@ function SubmitOfferForm() {
         company_name: form.companyName,
         contact_person: form.contactPerson,
         email: form.email,
-        price: form.price,
+        quantity: form.quantity,
+        price_per_unit: form.pricePerUnit,
+        finishing_cost: form.finishingCost,
+        transport_cost: form.transportCost,
         delivery_time: form.deliveryTime,
+        total: total.toFixed(2),
         message: form.message,
       },
     ]);
@@ -66,7 +85,7 @@ function SubmitOfferForm() {
       return;
     }
 
-    const buyerLink = `https://metalconnect-dz31hiny4-nikolas-projects-7ba7ab27.vercel.app/buyer/rfq/${rfqData.id}?token=${rfqData.buyer_token}`;
+    const buyerLink = `https://metalconnect-gamma.vercel.app/buyer/rfq/${rfqData.id}?token=${rfqData.buyer_token}`;
 
     await fetch("/api/send-rfq-email", {
       method: "POST",
@@ -92,11 +111,23 @@ ${form.contactPerson}
 Supplier email:
 ${form.email}
 
-Price:
-${form.price}
+Quantity:
+${form.quantity}
+
+Price per unit:
+${form.pricePerUnit} €
+
+Finishing cost:
+${form.finishingCost} €
+
+Transport cost:
+${form.transportCost} €
 
 Delivery time:
 ${form.deliveryTime}
+
+Total:
+${total.toFixed(2)} €
 
 Message:
 ${form.message}
@@ -188,28 +219,69 @@ ${buyerLink}
             </div>
 
             <div>
-              <label className="text-sm font-medium">Price</label>
+              <label className="text-sm font-medium">Delivery time</label>
               <input
                 type="text"
-                name="price"
+                name="deliveryTime"
                 required
                 onChange={handleChange}
                 className="mt-2 w-full rounded-xl border px-4 py-3"
-                placeholder="e.g. 2.450 EUR"
+                placeholder="e.g. 21 days"
               />
             </div>
           </div>
 
-          <div>
-            <label className="text-sm font-medium">Delivery time</label>
-            <input
-              type="text"
-              name="deliveryTime"
-              required
-              onChange={handleChange}
-              className="mt-2 w-full rounded-xl border px-4 py-3"
-              placeholder="e.g. 21 days"
-            />
+          <div className="rounded-2xl border p-6 space-y-4">
+            <h2 className="font-semibold">Pricing breakdown</h2>
+
+            <div>
+              <label className="text-sm">Quantity (pcs)</label>
+              <input
+                type="number"
+                name="quantity"
+                onChange={handleChange}
+                className="mt-1 w-full rounded-xl border px-4 py-2"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm">Price per unit (€)</label>
+              <input
+                type="text"
+                name="pricePerUnit"
+                placeholder="npr. 1,75"
+                onChange={handleChange}
+                className="mt-1 w-full rounded-xl border px-4 py-2"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm">Finishing cost (€)</label>
+              <input
+                type="text"
+                name="finishingCost"
+                placeholder="npr. 0,80"
+                onChange={handleChange}
+                className="mt-1 w-full rounded-xl border px-4 py-2"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm">Transport cost (€)</label>
+              <input
+                type="text"
+                name="transportCost"
+                placeholder="npr. 125,00"
+                onChange={handleChange}
+                className="mt-1 w-full rounded-xl border px-4 py-2"
+              />
+            </div>
+
+            <div className="pt-2 border-t">
+              <span className="font-semibold text-lg">
+                Total: {total.toFixed(2)} €
+              </span>
+            </div>
           </div>
 
           <div>
