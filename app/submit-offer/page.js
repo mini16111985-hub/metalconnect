@@ -65,7 +65,8 @@ function SubmitOfferForm() {
 
     const { error: insertError } = await supabase.from("offers").insert([
       {
-        rfq_id: rfqData.slug,
+        rfq_id: rfqData.id,
+        rfq_slug: rfqData.slug,
         company_name: form.companyName,
         contact_person: form.contactPerson,
         email: form.email,
