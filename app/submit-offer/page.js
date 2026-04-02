@@ -6,7 +6,7 @@ import { supabase } from "../../lib/supabase";
 
 function SubmitOfferForm() {
   const searchParams = useSearchParams();
-  const rfqId = searchParams.get("rfqId");
+  const rfqSlug = searchParams.get("rfq");
 
   const [form, setForm] = useState({
     companyName: "",
@@ -46,15 +46,15 @@ function SubmitOfferForm() {
     e.preventDefault();
     setErrorMessage("");
 
-    if (!rfqId) {
-      setErrorMessage("Missing RFQ ID.");
+    if (!rfqSlug) {
+      setErrorMessage("Missing RFQ.");
       return;
     }
 
     const { data: rfqData, error: rfqError } = await supabase
       .from("rfqs")
-      .select("id, title, buyer_email, buyer_token")
-      .eq("id", rfqId)
+      .select("id, slug, title, buyer_email, buyer_token")
+      .eq("slug", rfqSlug)
       .single();
 
     if (rfqError || !rfqData) {
@@ -178,7 +178,7 @@ ${buyerLink}
         </p>
 
         <p className="mt-3 text-sm text-slate-500">
-          RFQ ID: <span className="font-medium">{rfqId || "Missing"}</span>
+          RFQ: <span className="font-medium">{rfqSlug || "Missing"}</span>
         </p>
 
         <form onSubmit={handleSubmit} className="mt-10 space-y-6">
