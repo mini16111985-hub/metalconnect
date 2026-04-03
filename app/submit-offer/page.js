@@ -65,7 +65,7 @@ function SubmitOfferForm() {
 
     const { error: insertError } = await supabase.from("offers").insert([
       {
-        rfq_id: rfqData.id,
+        rfq_id: Number(rfqData.id),
         rfq_slug: rfqData.slug,
         company_name: form.companyName,
         contact_person: form.contactPerson,
@@ -88,7 +88,7 @@ function SubmitOfferForm() {
 
     const buyerLink = `https://metalconnect-gamma.vercel.app/buyer/rfq/${rfqData.id}?token=${rfqData.buyer_token}`;
 
-    await fetch("/api/send-rfq-email", {
+    const emailResponse = await fetch("/api/send-email", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -139,6 +139,14 @@ ${buyerLink}
 — MetalConnect`,
       }),
     });
+
+    const emailResult = await emailResponse.json();
+
+    if (!emailResponse.ok || !emailResult.success) {
+      console.error("Send email error:", emailResult);
+      setErrorMessage("Offer saved, but email notification failed.");
+      return;
+    }
 
     setSubmitted(true);
   };
