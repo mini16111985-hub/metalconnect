@@ -22,8 +22,14 @@ function ErrorCard({ title, message }) {
 
 export default async function BuyerRFQPage({ params, searchParams }) {
   try {
-    const id = params?.id;
-    const token = searchParams?.token;
+    const resolvedParams = await Promise.resolve(params);
+    const resolvedSearchParams = await Promise.resolve(searchParams);
+
+    const rawId = resolvedParams?.id;
+    const rawToken = resolvedSearchParams?.token;
+
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
+    const token = Array.isArray(rawToken) ? rawToken[0] : rawToken;
 
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
       return (
@@ -52,6 +58,17 @@ export default async function BuyerRFQPage({ params, searchParams }) {
       );
     }
 
+    const numericId = Number(id);
+
+    if (!Number.isInteger(numericId) || numericId <= 0) {
+      return (
+        <ErrorCard
+          title="Invalid RFQ id"
+          message="The RFQ id in the buyer link is not valid."
+        />
+      );
+    }
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -59,8 +76,10 @@ export default async function BuyerRFQPage({ params, searchParams }) {
 
     const { data: rfq, error: rfqError } = await supabase
       .from("rfqs")
-      .select("*")
-      .eq("id", id)
+      .select(
+        "id, title, description, company_name, contact_person, quantity, material, country, deadline, file_url, status, buyer_token"
+      )
+      .eq("id", numericId)
       .eq("buyer_token", token)
       .single();
 
@@ -75,8 +94,10 @@ export default async function BuyerRFQPage({ params, searchParams }) {
 
     const { data: offers, error: offersError } = await supabase
       .from("offers")
-      .select("*")
-      .eq("rfq_id", rfq.id)
+      .select(
+        "id, company_name, contact_person, email, quantity, price_per_unit, finishing_cost, transport_cost, delivery_time, total, message, created_at"
+      )
+      .eq("rfq_id", numericId)
       .order("created_at", { ascending: true });
 
     if (offersError) {
@@ -109,7 +130,7 @@ export default async function BuyerRFQPage({ params, searchParams }) {
                 <div className="text-xs uppercase tracking-wide text-slate-500">
                   Status
                 </div>
-                <div className="mt-2 font-semibold">{rfq.status}</div>
+                <div className="mt-2 font-semibold">{rfq.status || "—"}</div>
               </div>
 
               <div className="rounded-2xl border p-4">
@@ -149,11 +170,6 @@ export default async function BuyerRFQPage({ params, searchParams }) {
                 </div>
 
                 <div>
-                  <div className="text-sm text-slate-500">Requested service</div>
-                  <div className="font-medium">{rfq.service || "—"}</div>
-                </div>
-
-                <div>
                   <div className="text-sm text-slate-500">Quantity</div>
                   <div className="font-medium">{rfq.quantity || "—"}</div>
                 </div>
@@ -184,7 +200,7 @@ export default async function BuyerRFQPage({ params, searchParams }) {
 
               <div className="mt-6">
                 <div className="text-sm text-slate-500">Description</div>
-                <div className="mt-2 rounded-2xl bg-slate-50 p-4 whitespace-pre-wrap">
+                <div className="mt-2 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4">
                   {rfq.description || "—"}
                 </div>
               </div>
@@ -279,7 +295,7 @@ export default async function BuyerRFQPage({ params, searchParams }) {
 
                     <div className="mt-6">
                       <div className="text-sm text-slate-500">Message</div>
-                      <div className="mt-2 rounded-2xl bg-slate-50 p-4 whitespace-pre-wrap">
+                      <div className="mt-2 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4">
                         {offer.message || "—"}
                       </div>
                     </div>
