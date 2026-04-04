@@ -150,7 +150,7 @@ export default function RFQOffersPage() {
 
         <div className="mt-10">
           <a
-            href={`/rfq/${slug}`}
+            href={`/rfq-detail?slug=${encodeURIComponent(slug)}`}
             className="inline-block rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 hover:bg-slate-100"
           >
             Back to RFQ detail
