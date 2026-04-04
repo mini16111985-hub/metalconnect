@@ -86,7 +86,7 @@ function SubmitOfferForm() {
       return;
     }
 
-    const buyerLink = `https://metalconnect-gamma.vercel.app/buyer/rfq/${rfqData.id}?token=${rfqData.buyer_token}`;
+    const buyerLink = `https://metalconnect-gamma.vercel.app/buyer-review?id=${rfqData.id}&token=${encodeURIComponent(rfqData.buyer_token)}`;
 
     const emailResponse = await fetch("/api/send-email", {
       method: "POST",
