@@ -1,25 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "../../../lib/supabase";
 
-export default function AdminRFQsClient() {
+export default function AdminRFQsClient({ adminKey }) {
   const [rfqs, setRfqs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
 
   const fetchRfqs = async () => {
-    const { data, error } = await supabase
-      .from("rfqs")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const response = await fetch("/api/admin-rfqs", {
+      method: "GET",
+      headers: {
+        "x-admin-key": adminKey,
+      },
+      cache: "no-store",
+    });
 
-    if (error) {
-      console.error("Error fetching RFQs:", error);
-    } else {
-      setRfqs(data || []);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      console.error("Error fetching RFQs:", result);
+      setRfqs([]);
+      setLoading(false);
+      return;
     }
 
+    setRfqs(result.rfqs || []);
     setLoading(false);
   };
 
@@ -30,13 +36,22 @@ export default function AdminRFQsClient() {
   const updateStatus = async (id, newStatus) => {
     setUpdatingId(id);
 
-    const { error } = await supabase
-      .from("rfqs")
-      .update({ status: newStatus })
-      .eq("id", id);
+    const response = await fetch("/api/admin-rfqs", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-key": adminKey,
+      },
+      body: JSON.stringify({
+        id,
+        status: newStatus,
+      }),
+    });
 
-    if (error) {
-      console.error("Update error:", error);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      console.error("Update error:", result);
     }
 
     await fetchRfqs();

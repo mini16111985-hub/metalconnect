@@ -19,5 +19,5 @@ export default async function AdminRFQsPage({ searchParams }) {
     );
   }
 
-  return <AdminRFQsClient />;
+  return <AdminRFQsClient adminKey={key} />;
 }
