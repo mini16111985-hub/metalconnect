@@ -70,12 +70,12 @@ function SubmitOfferForm() {
         company_name: form.companyName,
         contact_person: form.contactPerson,
         email: form.email,
-        quantity: form.quantity,
-        price_per_unit: form.pricePerUnit,
-        finishing_cost: form.finishingCost,
-        transport_cost: form.transportCost,
+        quantity: Number(form.quantity || 0),
+        price_per_unit: parseMoney(form.pricePerUnit),
+        finishing_cost: parseMoney(form.finishingCost),
+        transport_cost: parseMoney(form.transportCost),
         delivery_time: form.deliveryTime,
-        total: total.toFixed(2),
+        total: Number(total.toFixed(2)),
         message: form.message,
       },
     ]);
@@ -86,7 +86,9 @@ function SubmitOfferForm() {
       return;
     }
 
-    const buyerLink = `https://metalconnect-gamma.vercel.app/buyer-review?id=${rfqData.id}&token=${encodeURIComponent(rfqData.buyer_token)}`;
+    const buyerLink = `https://metalconnect-gamma.vercel.app/buyer-review?id=${rfqData.id}&token=${encodeURIComponent(
+      rfqData.buyer_token
+    )}`;
 
     const emailResponse = await fetch("/api/send-email", {
       method: "POST",
@@ -257,6 +259,7 @@ ${buyerLink}
               <label className="text-sm">Price per unit (€)</label>
               <input
                 type="text"
+                inputMode="decimal"
                 name="pricePerUnit"
                 placeholder="npr. 1,75"
                 onChange={handleChange}
@@ -268,6 +271,7 @@ ${buyerLink}
               <label className="text-sm">Finishing cost (€)</label>
               <input
                 type="text"
+                inputMode="decimal"
                 name="finishingCost"
                 placeholder="npr. 0,80"
                 onChange={handleChange}
@@ -279,6 +283,7 @@ ${buyerLink}
               <label className="text-sm">Transport cost (€)</label>
               <input
                 type="text"
+                inputMode="decimal"
                 name="transportCost"
                 placeholder="npr. 125,00"
                 onChange={handleChange}
