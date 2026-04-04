@@ -106,6 +106,7 @@ export default function SubmitRFQPage() {
         file_url: fileUrl,
         file_name: fileName,
         status: "Pending review",
+        created_at: new Date().toISOString(),
       },
     ]);
 
@@ -115,7 +116,7 @@ export default function SubmitRFQPage() {
       return;
     }
 
-    await fetch("/api/send-rfq-email", {
+    await fetch("/api/send-email", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
