@@ -55,7 +55,7 @@ function BuyerReviewContent() {
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
-        <section className="mx-auto max-w-4xl px-6 py-16 md:py-24">
+        <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
           <div className="rounded-3xl border bg-white p-8 shadow-sm">
             <h1 className="text-2xl font-semibold">Loading buyer dashboard...</h1>
           </div>
@@ -67,7 +67,7 @@ function BuyerReviewContent() {
   if (errorMessage) {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
-        <section className="mx-auto max-w-4xl px-6 py-16 md:py-24">
+        <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
           <div className="rounded-3xl border border-red-200 bg-white p-8 shadow-sm">
             <h1 className="text-2xl font-semibold text-red-700">Access error</h1>
             <p className="mt-3 whitespace-pre-wrap text-slate-600">{errorMessage}</p>
@@ -179,17 +179,26 @@ function BuyerReviewContent() {
                   key={offer.id}
                   className="rounded-3xl border bg-white p-8 shadow-sm"
                 >
-                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
                       <div className="text-xs uppercase tracking-wide text-slate-500">
                         Offer #{index + 1}
                       </div>
+
                       <h3 className="mt-2 text-2xl font-semibold">
                         {offer.company_name || "Supplier"}
                       </h3>
-                      <p className="mt-1 text-slate-600">
-                        {offer.contact_person || "—"} • {offer.email || "—"}
-                      </p>
+
+                      <div className="mt-3 space-y-1 text-sm text-slate-600">
+                        <p>
+                          <span className="font-medium text-slate-800">Contact person:</span>{" "}
+                          {offer.contact_person || "—"}
+                        </p>
+                        <p>
+                          <span className="font-medium text-slate-800">Contact email:</span>{" "}
+                          {offer.email || "—"}
+                        </p>
+                      </div>
                     </div>
 
                     <div className="rounded-2xl bg-slate-900 px-4 py-3 text-white">
@@ -275,7 +284,7 @@ export default function BuyerReviewPage() {
     <Suspense
       fallback={
         <main className="min-h-screen bg-slate-50 text-slate-900">
-          <section className="mx-auto max-w-4xl px-6 py-16 md:py-24">
+          <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
             <div className="rounded-3xl border bg-white p-8 shadow-sm">
               <h1 className="text-2xl font-semibold">Loading buyer dashboard...</h1>
             </div>
