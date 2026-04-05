@@ -6,6 +6,7 @@ export default function AdminRFQsClient() {
   const [rfqs, setRfqs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const fetchRfqs = async () => {
     const response = await fetch("/api/admin-rfqs", {
@@ -54,6 +55,29 @@ export default function AdminRFQsClient() {
     setUpdatingId(null);
   };
 
+  const handleLogout = async () => {
+    setLoggingOut(true);
+
+    try {
+      const response = await fetch("/api/admin-logout", {
+        method: "POST",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        console.error("Logout error:", result);
+        setLoggingOut(false);
+        return;
+      }
+
+      window.location.href = "/admin/login";
+    } catch (error) {
+      console.error("Logout error:", error);
+      setLoggingOut(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
     if (status === "Approved") {
       return "border-green-200 bg-green-50 text-green-700";
@@ -79,17 +103,29 @@ export default function AdminRFQsClient() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
       <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-        <div className="mb-6 inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
-          Admin Panel
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
+              Admin Panel
+            </div>
+
+            <h1 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">
+              Manage RFQs
+            </h1>
+
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
+              Review incoming requests and control which RFQs become visible on the public board.
+            </p>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 hover:bg-slate-100"
+          >
+            {loggingOut ? "Logging out..." : "Logout"}
+          </button>
         </div>
-
-        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-          Manage RFQs
-        </h1>
-
-        <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
-          Review incoming requests and control which RFQs become visible on the public board.
-        </p>
 
         <div className="mt-10 space-y-6">
           {rfqs.length === 0 ? (
