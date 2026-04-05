@@ -1,10 +1,12 @@
+import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
-function isAuthorized(req) {
-  const adminKey = req.headers.get("x-admin-key");
-  return adminKey && adminKey === process.env.ADMIN_ACCESS_KEY;
+async function isAuthorized() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("mc_admin_session")?.value;
+  return session === "authenticated";
 }
 
 function getSupabaseAdmin() {
@@ -14,9 +16,11 @@ function getSupabaseAdmin() {
   );
 }
 
-export async function GET(req) {
+export async function GET() {
   try {
-    if (!isAuthorized(req)) {
+    const authorized = await isAuthorized();
+
+    if (!authorized) {
       return Response.json(
         { success: false, error: "Unauthorized" },
         { status: 401 }
@@ -50,7 +54,9 @@ export async function GET(req) {
 
 export async function PATCH(req) {
   try {
-    if (!isAuthorized(req)) {
+    const authorized = await isAuthorized();
+
+    if (!authorized) {
       return Response.json(
         { success: false, error: "Unauthorized" },
         { status: 401 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export default function AdminRFQsClient({ adminKey }) {
+export default function AdminRFQsClient() {
   const [rfqs, setRfqs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
@@ -10,9 +10,6 @@ export default function AdminRFQsClient({ adminKey }) {
   const fetchRfqs = async () => {
     const response = await fetch("/api/admin-rfqs", {
       method: "GET",
-      headers: {
-        "x-admin-key": adminKey,
-      },
       cache: "no-store",
     });
 
@@ -40,7 +37,6 @@ export default function AdminRFQsClient({ adminKey }) {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        "x-admin-key": adminKey,
       },
       body: JSON.stringify({
         id,
