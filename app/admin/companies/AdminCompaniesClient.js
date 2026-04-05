@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "../../../lib/supabase";
 
 export default function AdminCompaniesClient() {
   const [companies, setCompanies] = useState([]);
@@ -9,17 +8,21 @@ export default function AdminCompaniesClient() {
   const [updatingId, setUpdatingId] = useState(null);
 
   const fetchCompanies = async () => {
-    const { data, error } = await supabase
-      .from("companies_pending")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const response = await fetch("/api/admin-companies", {
+      method: "GET",
+      cache: "no-store",
+    });
 
-    if (error) {
-      console.error("Error fetching companies:", error);
-    } else {
-      setCompanies(data || []);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      console.error("Error fetching companies:", result);
+      setCompanies([]);
+      setLoading(false);
+      return;
     }
 
+    setCompanies(result.companies || []);
     setLoading(false);
   };
 
@@ -30,21 +33,29 @@ export default function AdminCompaniesClient() {
   const updateStatus = async (company, newStatus) => {
     setUpdatingId(company.id);
 
-    const { error } = await supabase
-      .from("companies_pending")
-      .update({ status: newStatus })
-      .eq("id", company.id);
+    const response = await fetch("/api/admin-companies", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: company.id,
+        status: newStatus,
+      }),
+    });
 
-    if (error) {
-      console.error("Update error:", error);
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      console.error("Update error:", result);
       setUpdatingId(null);
       return;
     }
 
     if (newStatus === "Approved" && company.email) {
-      const companyLink = `http://localhost:3000/companies/${company.slug}`;
+      const companyLink = `https://metalconnect-gamma.vercel.app/companies/${company.slug}`;
 
-      const res = await fetch("/api/send-email", {
+      const emailResponse = await fetch("/api/send-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,8 +79,8 @@ Thank you for joining MetalConnect.
         }),
       });
 
-      const result = await res.json();
-      console.log("EMAIL RESULT:", result);
+      const emailResult = await emailResponse.json();
+      console.log("COMPANY APPROVAL EMAIL RESULT:", emailResult);
     }
 
     await fetchCompanies();
