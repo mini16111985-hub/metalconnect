@@ -51,6 +51,7 @@ export default function SubmitRFQPage() {
 
     let fileUrl = null;
     let fileName = null;
+    let filePath = null;
 
     if (file) {
       const extension = file.name.split(".").pop()?.toLowerCase() || "bin";
@@ -87,6 +88,7 @@ export default function SubmitRFQPage() {
 
       fileUrl = publicUrlData.publicUrl;
       fileName = file.name;
+      filePath = safeFileName;
     }
 
     const { error } = await supabase.from("rfqs").insert([
@@ -105,6 +107,7 @@ export default function SubmitRFQPage() {
         description: form.description,
         file_url: fileUrl,
         file_name: fileName,
+        file_path: filePath,
         status: "Pending review",
         created_at: new Date().toISOString(),
       },
