@@ -1,12 +1,17 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { supabase } from "../../lib/supabase";
+import { createSupabaseBrowserClient } from "../../lib/supabase-browser";
 
 function SubmitOfferForm() {
   const searchParams = useSearchParams();
   const rfqSlug = searchParams.get("rfq");
+
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authUser, setAuthUser] = useState(null);
 
   const [form, setForm] = useState({
     companyName: "",
@@ -22,6 +27,29 @@ function SubmitOfferForm() {
 
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    async function loadSession() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        const nextUrl = `/submit-offer${rfqSlug ? `?rfq=${encodeURIComponent(rfqSlug)}` : ""}`;
+        window.location.href = `/supplier/login?next=${encodeURIComponent(nextUrl)}`;
+        return;
+      }
+
+      setAuthUser(user);
+      setForm((prev) => ({
+        ...prev,
+        email: user.email || "",
+      }));
+      setAuthChecked(true);
+    }
+
+    loadSession();
+  }, [supabase, rfqSlug]);
 
   const handleChange = (e) => {
     setForm({
@@ -70,7 +98,7 @@ function SubmitOfferForm() {
         company_name: form.companyName,
         contact_person: form.contactPerson,
         email: form.email,
-        quantity: Number(form.quantity || 0),
+        quantity: form.quantity,
         price_per_unit: parseMoney(form.pricePerUnit),
         finishing_cost: parseMoney(form.finishingCost),
         transport_cost: parseMoney(form.transportCost),
@@ -86,9 +114,7 @@ function SubmitOfferForm() {
       return;
     }
 
-    const buyerLink = `https://metalconnect-gamma.vercel.app/buyer-review?id=${rfqData.id}&token=${encodeURIComponent(
-      rfqData.buyer_token
-    )}`;
+    const buyerLink = `https://metalconnect-gamma.vercel.app/buyer-review?id=${rfqData.id}&token=${encodeURIComponent(rfqData.buyer_token)}`;
 
     const emailResponse = await fetch("/api/send-email", {
       method: "POST",
@@ -118,13 +144,13 @@ Quantity:
 ${form.quantity}
 
 Price per unit:
-${form.pricePerUnit} €
+${parseMoney(form.pricePerUnit).toFixed(2)} €
 
 Finishing cost:
-${form.finishingCost} €
+${parseMoney(form.finishingCost).toFixed(2)} €
 
 Transport cost:
-${form.transportCost} €
+${parseMoney(form.transportCost).toFixed(2)} €
 
 Delivery time:
 ${form.deliveryTime}
@@ -152,6 +178,16 @@ ${buyerLink}
 
     setSubmitted(true);
   };
+
+  if (!authChecked) {
+    return (
+      <main className="min-h-screen bg-slate-50 text-slate-900">
+        <section className="mx-auto max-w-3xl px-6 py-16 md:py-24">
+          <h1 className="text-3xl font-bold">Checking supplier session...</h1>
+        </section>
+      </main>
+    );
+  }
 
   if (submitted) {
     return (
@@ -189,6 +225,10 @@ ${buyerLink}
         </p>
 
         <p className="mt-3 text-sm text-slate-500">
+          Logged in as: <span className="font-medium">{authUser?.email || "—"}</span>
+        </p>
+
+        <p className="mt-1 text-sm text-slate-500">
           RFQ: <span className="font-medium">{rfqSlug || "Missing"}</span>
         </p>
 
@@ -224,8 +264,9 @@ ${buyerLink}
                 type="email"
                 name="email"
                 required
-                onChange={handleChange}
-                className="mt-2 w-full rounded-xl border px-4 py-3"
+                value={form.email}
+                readOnly
+                className="mt-2 w-full rounded-xl border bg-slate-50 px-4 py-3"
               />
             </div>
 
@@ -259,7 +300,6 @@ ${buyerLink}
               <label className="text-sm">Price per unit (€)</label>
               <input
                 type="text"
-                inputMode="decimal"
                 name="pricePerUnit"
                 placeholder="npr. 1,75"
                 onChange={handleChange}
@@ -271,7 +311,6 @@ ${buyerLink}
               <label className="text-sm">Finishing cost (€)</label>
               <input
                 type="text"
-                inputMode="decimal"
                 name="finishingCost"
                 placeholder="npr. 0,80"
                 onChange={handleChange}
@@ -283,7 +322,6 @@ ${buyerLink}
               <label className="text-sm">Transport cost (€)</label>
               <input
                 type="text"
-                inputMode="decimal"
                 name="transportCost"
                 placeholder="npr. 125,00"
                 onChange={handleChange}
