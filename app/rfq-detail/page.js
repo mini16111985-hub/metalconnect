@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { supabase } from "../../lib/supabase";
 
 function RFQDetailContent() {
   const searchParams = useSearchParams();
@@ -11,40 +10,37 @@ function RFQDetailContent() {
   const [rfq, setRfq] = useState(null);
   const [offerCount, setOfferCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const fetchRfqDetail = async () => {
-      if (!slug) {
+      try {
+        if (!slug) {
+          setErrorMessage("Missing RFQ slug.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+          `/api/rfq-detail?slug=${encodeURIComponent(slug)}`,
+          { cache: "no-store" }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          setErrorMessage(result.error || "Failed to load RFQ.");
+          setLoading(false);
+          return;
+        }
+
+        setRfq(result.rfq || null);
+        setOfferCount(result.offerCount || 0);
         setLoading(false);
-        return;
-      }
-
-      const { data: rfqData, error: rfqError } = await supabase
-        .from("rfqs")
-        .select("*")
-        .eq("slug", slug)
-        .single();
-
-      if (rfqError) {
-        console.error("Fetch RFQ detail error:", rfqError);
+      } catch (error) {
+        setErrorMessage(error.message || "Unknown error.");
         setLoading(false);
-        return;
       }
-
-      setRfq(rfqData);
-
-      const { count, error: offersError } = await supabase
-        .from("offers")
-        .select("*", { count: "exact", head: true })
-        .eq("rfq_slug", slug);
-
-      if (offersError) {
-        console.error("Fetch offers count error:", offersError);
-      } else {
-        setOfferCount(count || 0);
-      }
-
-      setLoading(false);
     };
 
     fetchRfqDetail();
@@ -73,11 +69,14 @@ function RFQDetailContent() {
     );
   }
 
-  if (!slug) {
+  if (errorMessage) {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
         <section className="mx-auto max-w-5xl px-6 py-16 md:py-24">
-          <h1 className="text-3xl font-bold">Missing RFQ slug</h1>
+          <div className="rounded-3xl border border-red-200 bg-white p-8 shadow-sm">
+            <h1 className="text-2xl font-semibold text-red-700">RFQ error</h1>
+            <p className="mt-3 text-slate-600">{errorMessage}</p>
+          </div>
         </section>
       </main>
     );
@@ -152,14 +151,14 @@ function RFQDetailContent() {
               {rfq.description}
             </p>
 
-            {rfq.file_url && (
+            {rfq.attachment_url && (
               <div className="mt-6">
                 <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                   Attachment
                 </h3>
 
                 <a
-                  href={rfq.file_url}
+                  href={rfq.attachment_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-3 inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm hover:bg-slate-100"
