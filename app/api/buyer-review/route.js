@@ -1,5 +1,22 @@
 import { createClient } from "@supabase/supabase-js";
 
+export const dynamic = "force-dynamic";
+
+function getSupabaseAdmin() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL.");
+  }
+
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY.");
+  }
+
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
+
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
@@ -13,29 +30,12 @@ export async function GET(req) {
       );
     }
 
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      return Response.json(
-        { success: false, error: "Missing NEXT_PUBLIC_SUPABASE_URL." },
-        { status: 500 }
-      );
-    }
-
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return Response.json(
-        { success: false, error: "Missing SUPABASE_SERVICE_ROLE_KEY." },
-        { status: 500 }
-      );
-    }
-
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
+    const supabase = getSupabaseAdmin();
 
     const { data: rfq, error: rfqError } = await supabase
       .from("rfqs")
       .select(
-        "id, title, description, company_name, contact_person, quantity, material, country, deadline, file_url, status, buyer_token"
+        "id, title, description, company_name, contact_person, quantity, material, country, deadline, file_name, file_url, file_path, status, buyer_token"
       )
       .eq("id", id)
       .eq("buyer_token", token)
@@ -46,6 +46,24 @@ export async function GET(req) {
         { success: false, error: "This buyer link is invalid or expired." },
         { status: 404 }
       );
+    }
+
+    let attachmentUrl = null;
+
+    if (rfq.file_path) {
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from("rfq-files")
+        .createSignedUrl(rfq.file_path, 60 * 60);
+
+      if (signedError) {
+        console.error("Buyer review signed URL error:", signedError);
+      } else {
+        attachmentUrl = signedData?.signedUrl || null;
+      }
+    }
+
+    if (!attachmentUrl && rfq.file_url) {
+      attachmentUrl = rfq.file_url;
     }
 
     const { data: offers, error: offersError } = await supabase
@@ -65,7 +83,10 @@ export async function GET(req) {
 
     return Response.json({
       success: true,
-      rfq,
+      rfq: {
+        ...rfq,
+        attachment_url: attachmentUrl,
+      },
       offers: offers || [],
     });
   } catch (error) {

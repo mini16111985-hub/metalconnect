@@ -140,9 +140,9 @@ function BuyerReviewContent() {
               <div>
                 <div className="text-sm text-slate-500">Attached file</div>
                 <div className="font-medium">
-                  {rfq?.file_url ? (
+                  {rfq?.attachment_url ? (
                     <a
-                      href={rfq.file_url}
+                      href={rfq.attachment_url}
                       target="_blank"
                       rel="noreferrer"
                       className="text-blue-600 underline"
@@ -295,4 +295,4 @@ export default function BuyerReviewPage() {
       <BuyerReviewContent />
     </Suspense>
   );
-}
+} 
