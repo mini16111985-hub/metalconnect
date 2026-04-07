@@ -1,14 +1,26 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "../../../lib/supabase-browser";
 
 export default function SupplierLoginPage() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+  const searchParams = useSearchParams();
+
+  const next = searchParams.get("next") || "/rfq";
+  const error = searchParams.get("error");
+
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(
+    error === "missing_code"
+      ? "Login link is missing required data."
+      : error === "auth_callback_failed"
+      ? "Magic link login failed. Please try again."
+      : ""
+  );
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -17,7 +29,7 @@ export default function SupplierLoginPage() {
     setErrorMessage("");
 
     try {
-      const redirectTo = `${window.location.origin}/auth/callback`;
+      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
 
       const { error } = await supabase.auth.signInWithOtp({
         email,
@@ -52,6 +64,11 @@ export default function SupplierLoginPage() {
 
           <p className="mt-3 text-slate-600">
             Enter your email and we will send you a secure magic link.
+          </p>
+
+          <p className="mt-3 text-sm text-slate-500">
+            After login you will continue to:{" "}
+            <span className="font-medium">{next}</span>
           </p>
 
           <form onSubmit={handleLogin} className="mt-8 space-y-5">
