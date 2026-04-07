@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "../../../lib/supabase-browser";
 
-export default function SupplierLoginPage() {
+function SupplierLoginContent() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const searchParams = useSearchParams();
 
@@ -107,5 +107,23 @@ export default function SupplierLoginPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function SupplierLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-50 text-slate-900">
+          <section className="mx-auto max-w-md px-6 py-16 md:py-24">
+            <div className="rounded-3xl border bg-white p-8 shadow-sm">
+              <h1 className="text-2xl font-semibold">Loading supplier login...</h1>
+            </div>
+          </section>
+        </main>
+      }
+    >
+      <SupplierLoginContent />
+    </Suspense>
   );
 }
