@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "../../../lib/supabase-browser";
 
@@ -11,6 +11,7 @@ function SupplierLoginContent() {
   const next = searchParams.get("next") || "/rfq";
   const error = searchParams.get("error");
 
+  const [checkingSession, setCheckingSession] = useState(true);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -21,6 +22,23 @@ function SupplierLoginContent() {
       ? "Magic link login failed. Please try again."
       : ""
   );
+
+  useEffect(() => {
+    async function checkSession() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        window.location.href = next;
+        return;
+      }
+
+      setCheckingSession(false);
+    }
+
+    checkSession();
+  }, [supabase, next]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -51,6 +69,18 @@ function SupplierLoginContent() {
       setLoading(false);
     }
   };
+
+  if (checkingSession) {
+    return (
+      <main className="min-h-screen bg-slate-50 text-slate-900">
+        <section className="mx-auto max-w-md px-6 py-16 md:py-24">
+          <div className="rounded-3xl border bg-white p-8 shadow-sm">
+            <h1 className="text-2xl font-semibold">Checking supplier session...</h1>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
