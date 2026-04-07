@@ -79,6 +79,11 @@ function SubmitOfferForm() {
       return;
     }
 
+    if (!authUser) {
+      setErrorMessage("Supplier session not found.");
+      return;
+    }
+
     const { data: rfqData, error: rfqError } = await supabase
       .from("rfqs")
       .select("id, slug, title, buyer_email, buyer_token")
@@ -95,9 +100,10 @@ function SubmitOfferForm() {
       {
         rfq_id: Number(rfqData.id),
         rfq_slug: rfqData.slug,
+        supplier_user_id: authUser.id,
         company_name: form.companyName,
         contact_person: form.contactPerson,
-        email: form.email,
+        email: authUser.email || form.email,
         quantity: form.quantity,
         price_per_unit: parseMoney(form.pricePerUnit),
         finishing_cost: parseMoney(form.finishingCost),
@@ -138,7 +144,7 @@ Contact person:
 ${form.contactPerson}
 
 Supplier email:
-${form.email}
+${authUser.email || form.email}
 
 Quantity:
 ${form.quantity}
@@ -282,7 +288,7 @@ ${buyerLink}
                 type="email"
                 name="email"
                 required
-                value={form.email}
+                value={authUser?.email || form.email}
                 readOnly
                 className="mt-2 w-full rounded-xl border bg-slate-50 px-4 py-3"
               />
