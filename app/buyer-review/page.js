@@ -1,11 +1,23 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 function formatMoney(value) {
   const num = Number(value || 0);
   return `${num.toFixed(2)} €`;
+}
+
+function getStatusBadgeClass(status) {
+  if (status === "Accepted") {
+    return "border-green-200 bg-green-50 text-green-700";
+  }
+
+  if (status === "Rejected") {
+    return "border-red-200 bg-red-50 text-red-700";
+  }
+
+  return "border-yellow-200 bg-yellow-50 text-yellow-700";
 }
 
 function BuyerReviewContent() {
@@ -14,43 +26,78 @@ function BuyerReviewContent() {
   const token = searchParams.get("token");
 
   const [loading, setLoading] = useState(true);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [rfq, setRfq] = useState(null);
   const [offers, setOffers] = useState([]);
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        if (!id || !token) {
-          setErrorMessage("Missing RFQ id or token.");
-          setLoading(false);
-          return;
-        }
-
-        const res = await fetch(
-          `/api/buyer-review?id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`,
-          { cache: "no-store" }
-        );
-
-        const result = await res.json();
-
-        if (!res.ok || !result.success) {
-          setErrorMessage(result.error || "Failed to load buyer review.");
-          setLoading(false);
-          return;
-        }
-
-        setRfq(result.rfq);
-        setOffers(result.offers || []);
+  const loadData = useCallback(async () => {
+    try {
+      if (!id || !token) {
+        setErrorMessage("Missing RFQ id or token.");
         setLoading(false);
-      } catch (error) {
-        setErrorMessage(error.message || "Unknown error.");
-        setLoading(false);
+        return;
       }
-    }
 
-    loadData();
+      const res = await fetch(
+        `/api/buyer-review?id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`,
+        { cache: "no-store" }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        setErrorMessage(result.error || "Failed to load buyer review.");
+        setLoading(false);
+        return;
+      }
+
+      setRfq(result.rfq);
+      setOffers(result.offers || []);
+      setLoading(false);
+    } catch (error) {
+      setErrorMessage(error.message || "Unknown error.");
+      setLoading(false);
+    }
   }, [id, token]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleOfferStatus = async (offerId, status) => {
+    try {
+      setActionLoadingId(offerId);
+      setErrorMessage("");
+
+      const response = await fetch("/api/buyer-review", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+          token,
+          offerId,
+          status,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        setErrorMessage(result.error || "Failed to update offer status.");
+        setActionLoadingId(null);
+        return;
+      }
+
+      await loadData();
+      setActionLoadingId(null);
+    } catch (error) {
+      setErrorMessage(error.message || "Unknown error.");
+      setActionLoadingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -64,7 +111,7 @@ function BuyerReviewContent() {
     );
   }
 
-  if (errorMessage) {
+  if (errorMessage && !rfq) {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
         <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
@@ -165,6 +212,12 @@ function BuyerReviewContent() {
           </div>
         </div>
 
+        {errorMessage && (
+          <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            Error: {errorMessage}
+          </div>
+        )}
+
         <div className="mt-10">
           <h2 className="text-2xl font-bold">Supplier offers</h2>
 
@@ -198,6 +251,14 @@ function BuyerReviewContent() {
                           <span className="font-medium text-slate-800">Contact email:</span>{" "}
                           {offer.email || "—"}
                         </p>
+                      </div>
+
+                      <div
+                        className={`mt-4 inline-flex rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-wide ${getStatusBadgeClass(
+                          offer.status || "Pending"
+                        )}`}
+                      >
+                        {offer.status || "Pending"}
                       </div>
                     </div>
 
@@ -263,6 +324,42 @@ function BuyerReviewContent() {
                     </div>
                   </div>
 
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleOfferStatus(offer.id, "Accepted")}
+                      disabled={actionLoadingId === offer.id || offer.status === "Accepted"}
+                      className={`rounded-2xl px-4 py-3 text-sm font-medium ${
+                        offer.status === "Accepted"
+                          ? "cursor-not-allowed bg-green-100 text-green-700"
+                          : "bg-green-600 text-white hover:bg-green-700"
+                      }`}
+                    >
+                      {actionLoadingId === offer.id
+                        ? "Updating..."
+                        : offer.status === "Accepted"
+                        ? "Accepted"
+                        : "Accept"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleOfferStatus(offer.id, "Rejected")}
+                      disabled={actionLoadingId === offer.id || offer.status === "Rejected"}
+                      className={`rounded-2xl px-4 py-3 text-sm font-medium ${
+                        offer.status === "Rejected"
+                          ? "cursor-not-allowed bg-red-100 text-red-700"
+                          : "bg-red-600 text-white hover:bg-red-700"
+                      }`}
+                    >
+                      {actionLoadingId === offer.id
+                        ? "Updating..."
+                        : offer.status === "Rejected"
+                        ? "Rejected"
+                        : "Reject"}
+                    </button>
+                  </div>
+
                   <div className="mt-6 text-sm text-slate-500">
                     Submitted:{" "}
                     {offer.created_at
@@ -295,4 +392,4 @@ export default function BuyerReviewPage() {
       <BuyerReviewContent />
     </Suspense>
   );
-} 
+}
