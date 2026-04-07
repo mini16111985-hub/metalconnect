@@ -179,6 +179,14 @@ ${buyerLink}
     setSubmitted(true);
   };
 
+  const handleLogout = async () => {
+    await fetch("/api/supplier-logout", {
+      method: "POST",
+    });
+
+    window.location.href = "/supplier/login";
+  };
+
   if (!authChecked) {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -224,9 +232,19 @@ ${buyerLink}
           Respond to this RFQ with your pricing, delivery time, and message.
         </p>
 
-        <p className="mt-3 text-sm text-slate-500">
-          Logged in as: <span className="font-medium">{authUser?.email || "—"}</span>
-        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+          <p>
+            Logged in as: <span className="font-medium">{authUser?.email || "—"}</span>
+          </p>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+          >
+            Logout
+          </button>
+        </div>
 
         <p className="mt-1 text-sm text-slate-500">
           RFQ: <span className="font-medium">{rfqSlug || "Missing"}</span>
