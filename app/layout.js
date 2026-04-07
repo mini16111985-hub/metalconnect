@@ -39,6 +39,9 @@ export default function RootLayout({ children }) {
               <a href="/advertise" className="hover:text-slate-600">
                 Advertise
               </a>
+              <a href="/contact" className="hover:text-slate-600">
+                Contact
+              </a>
             </nav>
           </div>
         </header>
@@ -47,7 +50,23 @@ export default function RootLayout({ children }) {
 
         <footer className="border-t bg-white">
           <div className="mx-auto max-w-7xl px-6 py-8 text-sm text-slate-500">
-            © 2026 MetalConnect. Independent industrial platform connecting Croatian manufacturers with European buyers.
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                © 2026 MetalConnect. Independent industrial platform connecting Croatian manufacturers with European buyers.
+              </div>
+
+              <div className="flex flex-wrap gap-4">
+                <a href="/contact" className="hover:text-slate-700">
+                  Contact
+                </a>
+                <a href="/privacy" className="hover:text-slate-700">
+                  Privacy
+                </a>
+                <a href="/terms" className="hover:text-slate-700">
+                  Terms
+                </a>
+              </div>
+            </div>
           </div>
         </footer>
       </body>
