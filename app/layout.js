@@ -14,14 +14,10 @@ export default function RootLayout({ children }) {
             <div className="min-w-0">
               <a
                 href="/"
-                className="inline-block text-2xl font-bold tracking-tight text-slate-950 transition hover:text-blue-900"
+                className="inline-block text-3xl font-extrabold tracking-tight text-slate-950 transition hover:text-blue-900 md:text-4xl"
               >
                 MetalConnect
               </a>
-
-              <div className="mt-1 text-sm font-medium text-slate-500">
-                Connecting European buyers with Croatian manufacturers
-              </div>
             </div>
 
             <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
