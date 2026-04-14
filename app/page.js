@@ -61,7 +61,7 @@ export default function HomePage() {
           />
 
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/15 via-transparent to-slate-950/10" />
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-50 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-slate-50 to-transparent" />
         </div>
       </section>
 
