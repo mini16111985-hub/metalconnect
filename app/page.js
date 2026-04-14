@@ -57,7 +57,7 @@ export default function HomePage() {
             src="/metalconnect-hero.png"
             alt="MetalConnect industrial sourcing banner"
             className="absolute inset-0 h-full w-full object-cover"
-            style={{ objectPosition: "center 70%" }}
+            style={{ objectPosition: "center 65%" }}
           />
 
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/15 via-transparent to-slate-950/10" />
