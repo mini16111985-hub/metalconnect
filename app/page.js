@@ -65,7 +65,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-14 md:py-20">
+      <section className="relative z-10 mx-auto max-w-7xl -mt-6 px-6 pt-0 pb-14 md:-mt-10 md:pt-0 md:pb-20">
         <div className="grid gap-12 md:grid-cols-[1.3fr_0.9fr] md:items-start">
           <div>
             <div className="mb-5 inline-flex w-fit rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-800">
