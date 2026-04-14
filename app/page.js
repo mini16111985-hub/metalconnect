@@ -51,12 +51,18 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <section className="w-full border-b border-slate-200 bg-slate-900">
-        <img
-          src="/metalconnect-hero.png"
-          alt="MetalConnect industrial sourcing banner"
-          className="h-[260px] w-full object-cover md:h-[360px] lg:h-[440px]"
-        />
+      <section className="relative w-full overflow-hidden border-b border-blue-200 bg-slate-950">
+        <div className="relative h-[210px] md:h-[260px] lg:h-[310px]">
+          <img
+            src="/metalconnect-hero.png"
+            alt="MetalConnect industrial sourcing banner"
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: "center 40%" }}
+          />
+
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/15 via-transparent to-slate-950/10" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-50 to-transparent" />
+        </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-14 md:py-20">
