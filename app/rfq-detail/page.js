@@ -62,8 +62,19 @@ function RFQDetailContent() {
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
-        <section className="mx-auto max-w-5xl px-6 py-16 md:py-24">
-          <h1 className="text-3xl font-bold">Loading RFQ...</h1>
+        <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+          <div className="mb-6 inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-800">
+            RFQ Detail
+          </div>
+
+          <div className="rounded-3xl border border-blue-100 bg-white p-10 shadow-sm">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+              Loading RFQ...
+            </h1>
+            <p className="mt-4 text-slate-600">
+              Please wait while MetalConnect loads the RFQ details.
+            </p>
+          </div>
         </section>
       </main>
     );
@@ -72,10 +83,23 @@ function RFQDetailContent() {
   if (errorMessage) {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
-        <section className="mx-auto max-w-5xl px-6 py-16 md:py-24">
-          <div className="rounded-3xl border border-red-200 bg-white p-8 shadow-sm">
-            <h1 className="text-2xl font-semibold text-red-700">RFQ error</h1>
-            <p className="mt-3 text-slate-600">{errorMessage}</p>
+        <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+          <div className="mb-6 inline-flex rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700">
+            RFQ Error
+          </div>
+
+          <div className="rounded-3xl border border-red-200 bg-white p-10 shadow-sm">
+            <h1 className="text-3xl font-bold tracking-tight text-red-700">
+              RFQ could not be loaded
+            </h1>
+            <p className="mt-4 text-slate-600">{errorMessage}</p>
+
+            <a
+              href="/rfq"
+              className="mt-6 inline-block rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-medium text-blue-900 transition hover:bg-blue-50"
+            >
+              Back to RFQ board
+            </a>
           </div>
         </section>
       </main>
@@ -85,8 +109,22 @@ function RFQDetailContent() {
   if (!rfq) {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
-        <section className="mx-auto max-w-5xl px-6 py-16 md:py-24">
-          <h1 className="text-3xl font-bold">RFQ not found</h1>
+        <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+          <div className="rounded-3xl border border-blue-100 bg-white p-10 shadow-sm">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+              RFQ not found
+            </h1>
+            <p className="mt-4 text-slate-600">
+              The requested RFQ could not be found.
+            </p>
+
+            <a
+              href="/rfq"
+              className="mt-6 inline-block rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-medium text-blue-900 transition hover:bg-blue-50"
+            >
+              Back to RFQ board
+            </a>
+          </div>
         </section>
       </main>
     );
@@ -94,99 +132,194 @@ function RFQDetailContent() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <section className="mx-auto max-w-5xl px-6 py-16 md:py-24">
-        <div className="mb-6 inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
+      <section className="mx-auto max-w-7xl px-6 pt-8 pb-16 md:pt-10 md:pb-20">
+        <div className="mb-6 inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-800">
           RFQ Detail
         </div>
 
-        <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-          {getRfqTitle(rfq)}
-        </h1>
-
-        <p className="mt-3 text-lg text-slate-600">{rfq.country}</p>
-
-        <div className="mt-6 inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700">
-          Offers received: {offerCount}
-        </div>
-
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          <div className="rounded-3xl border bg-white p-8 shadow-sm">
-            <h2 className="text-xl font-semibold">Project Details</h2>
-
-            <div className="mt-4 space-y-2 text-base text-slate-700">
-              <div>
-                <span className="font-semibold">Service:</span> {rfq.service}
-              </div>
-              <div>
-                <span className="font-semibold">Material:</span> {rfq.material}
-              </div>
-              <div>
-                <span className="font-semibold">Quantity:</span> {rfq.quantity}
-              </div>
-              <div>
-                <span className="font-semibold">Deadline:</span> {rfq.deadline}
-              </div>
-              <div>
-                <span className="font-semibold">Status:</span> {rfq.status}
+        <div className="grid gap-8 md:grid-cols-[1.15fr_0.85fr] md:items-start">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="inline-flex rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-medium uppercase tracking-wide text-green-700">
+                {rfq.status || "Approved"}
               </div>
 
-              {rfq.company_name && (
-                <div>
-                  <span className="font-semibold">Company:</span> {rfq.company_name}
-                </div>
-              )}
-
-              {rfq.contact_person && (
-                <div>
-                  <span className="font-semibold">Contact person:</span> {rfq.contact_person}
-                </div>
-              )}
+              <div className="inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-900">
+                Offers received: {offerCount}
+              </div>
             </div>
+
+            <h1 className="mt-5 text-4xl font-bold tracking-tight text-slate-950 md:text-5xl">
+              {getRfqTitle(rfq)}
+            </h1>
+
+            <p className="mt-4 text-lg text-slate-600">
+              {rfq.country || "—"}
+            </p>
           </div>
 
-          <div className="rounded-3xl border bg-white p-8 shadow-sm">
-            <h2 className="text-xl font-semibold">Description</h2>
+          <div className="rounded-3xl border border-blue-100 bg-white p-6 shadow-sm">
+            <div className="text-sm font-semibold uppercase tracking-wide text-blue-700">
+              Supplier action
+            </div>
 
-            <p className="mt-4 text-base leading-7 text-slate-600">
-              {rfq.description}
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Review the RFQ details, check the attachment if available, and
+              submit your offer through the structured supplier form.
             </p>
 
-            {rfq.attachment_url && (
-              <div className="mt-6">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                  Attachment
-                </h3>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a
+                href={`/submit-offer?rfq=${encodeURIComponent(rfq.slug)}`}
+                className="rounded-2xl bg-blue-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-800"
+              >
+                Submit offer →
+              </a>
 
-                <a
-                  href={rfq.attachment_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm hover:bg-slate-100"
-                >
-                  📎 Download drawing
-                </a>
+              <a
+                href="/rfq"
+                className="rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-medium text-blue-900 transition hover:bg-blue-50"
+              >
+                Back to RFQs
+              </a>
+            </div>
+          </div>
+        </div>
 
-                {rfq.file_name && (
-                  <p className="mt-2 text-sm text-slate-500">
-                    File: {rfq.file_name}
-                  </p>
-                )}
+        <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_1fr]">
+          <div className="rounded-3xl border border-blue-100 bg-white p-8 shadow-sm">
+            <h2 className="text-2xl font-semibold text-slate-950">
+              Project details
+            </h2>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-blue-50 bg-slate-50 px-4 py-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Service
+                </div>
+                <div className="mt-2 font-medium text-slate-900">
+                  {rfq.service || "—"}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-blue-50 bg-slate-50 px-4 py-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Material
+                </div>
+                <div className="mt-2 font-medium text-slate-900">
+                  {rfq.material || "—"}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-blue-50 bg-slate-50 px-4 py-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Quantity
+                </div>
+                <div className="mt-2 font-medium text-slate-900">
+                  {rfq.quantity || "—"}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-blue-50 bg-slate-50 px-4 py-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Deadline
+                </div>
+                <div className="mt-2 font-medium text-slate-900">
+                  {rfq.deadline || "—"}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-blue-50 bg-slate-50 px-4 py-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Status
+                </div>
+                <div className="mt-2 font-medium text-slate-900">
+                  {rfq.status || "—"}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-blue-50 bg-slate-50 px-4 py-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Buyer company
+                </div>
+                <div className="mt-2 font-medium text-slate-900">
+                  {rfq.company_name || "—"}
+                </div>
+              </div>
+            </div>
+
+            {rfq.contact_person && (
+              <div className="mt-6 rounded-2xl border border-blue-50 bg-slate-50 px-4 py-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Contact person
+                </div>
+                <div className="mt-2 font-medium text-slate-900">
+                  {rfq.contact_person}
+                </div>
               </div>
             )}
+          </div>
+
+          <div className="space-y-8">
+            <div className="rounded-3xl border border-blue-100 bg-white p-8 shadow-sm">
+              <h2 className="text-2xl font-semibold text-slate-950">
+                Description
+              </h2>
+
+              <div className="mt-6 whitespace-pre-wrap text-base leading-7 text-slate-600">
+                {rfq.description || "No description available."}
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-blue-100 bg-white p-8 shadow-sm">
+              <h2 className="text-2xl font-semibold text-slate-950">
+                Attachment
+              </h2>
+
+              {rfq.attachment_url ? (
+                <>
+                  <p className="mt-3 text-sm leading-6 text-slate-600">
+                    Download the attached drawing or technical file to review
+                    the RFQ in more detail.
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap items-center gap-4">
+                    <a
+                      href={rfq.attachment_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-2xl bg-blue-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-800"
+                    >
+                      Download drawing
+                    </a>
+                  </div>
+
+                  {rfq.file_name && (
+                    <p className="mt-4 text-sm text-slate-500">
+                      File: {rfq.file_name}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  No attachment is available for this RFQ.
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="mt-10 flex flex-wrap gap-4">
           <a
             href="/rfq"
-            className="inline-block rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 hover:bg-slate-100"
+            className="inline-block rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-medium text-blue-900 transition hover:bg-blue-50"
           >
-            Back to RFQ list
+            Back to RFQ board
           </a>
 
           <a
             href={`/submit-offer?rfq=${encodeURIComponent(rfq.slug)}`}
-            className="inline-block rounded-2xl bg-slate-900 px-5 py-3 text-sm font-medium text-white"
+            className="inline-block rounded-2xl bg-blue-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-800"
           >
             Submit offer →
           </a>
@@ -201,8 +334,19 @@ export default function RFQDetailPage() {
     <Suspense
       fallback={
         <main className="min-h-screen bg-slate-50 text-slate-900">
-          <section className="mx-auto max-w-5xl px-6 py-16 md:py-24">
-            <h1 className="text-3xl font-bold">Loading RFQ...</h1>
+          <section className="mx-auto max-w-5xl px-6 py-16 md:py-20">
+            <div className="mb-6 inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-800">
+              RFQ Detail
+            </div>
+
+            <div className="rounded-3xl border border-blue-100 bg-white p-10 shadow-sm">
+              <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+                Loading RFQ...
+              </h1>
+              <p className="mt-4 text-slate-600">
+                Please wait while MetalConnect prepares the RFQ detail page.
+              </p>
+            </div>
           </section>
         </main>
       }
