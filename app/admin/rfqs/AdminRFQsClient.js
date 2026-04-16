@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function AdminRFQsClient() {
   const [rfqs, setRfqs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const fetchRfqs = async () => {
     const response = await fetch("/api/admin-rfqs", {
@@ -18,12 +19,14 @@ export default function AdminRFQsClient() {
 
     if (!response.ok || !result.success) {
       console.error("Error fetching RFQs:", result);
+      setErrorMessage(result.error || "Failed to load RFQs.");
       setRfqs([]);
       setLoading(false);
       return;
     }
 
     setRfqs(result.rfqs || []);
+    setErrorMessage("");
     setLoading(false);
   };
 
@@ -33,6 +36,7 @@ export default function AdminRFQsClient() {
 
   const updateStatus = async (id, newStatus) => {
     setUpdatingId(id);
+    setErrorMessage("");
 
     const response = await fetch("/api/admin-rfqs", {
       method: "PATCH",
@@ -49,6 +53,7 @@ export default function AdminRFQsClient() {
 
     if (!response.ok || !result.success) {
       console.error("Update error:", result);
+      setErrorMessage(result.error || "Failed to update RFQ status.");
     }
 
     await fetchRfqs();
@@ -90,11 +95,31 @@ export default function AdminRFQsClient() {
     return "border-yellow-200 bg-yellow-50 text-yellow-700";
   };
 
+  const stats = useMemo(() => {
+    const total = rfqs.length;
+    const approved = rfqs.filter((rfq) => rfq.status === "Approved").length;
+    const rejected = rfqs.filter((rfq) => rfq.status === "Rejected").length;
+    const pending = rfqs.filter((rfq) => rfq.status === "Pending review").length;
+
+    return { total, approved, rejected, pending };
+  }, [rfqs]);
+
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
-        <section className="mx-auto max-w-6xl px-6 py-16">
-          <h1 className="text-3xl font-bold">Loading admin RFQs...</h1>
+        <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+          <div className="mb-6 inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-800">
+            Admin Panel
+          </div>
+
+          <div className="rounded-3xl border border-blue-100 bg-white p-10 shadow-sm">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+              Loading admin RFQs...
+            </h1>
+            <p className="mt-4 text-slate-600">
+              Please wait while MetalConnect loads incoming RFQ submissions.
+            </p>
+          </div>
         </section>
       </main>
     );
@@ -102,34 +127,79 @@ export default function AdminRFQsClient() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
-      <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+      <section className="mx-auto max-w-7xl px-6 pt-8 pb-16 md:pt-10 md:pb-20">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-600">
+            <div className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-800">
               Admin Panel
             </div>
 
-            <h1 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">
+            <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-950 md:text-5xl">
               Manage RFQs
             </h1>
 
             <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-600">
-              Review incoming requests and control which RFQs become visible on the public board.
+              Review incoming requests and control which RFQs become visible on
+              the public board.
             </p>
           </div>
 
           <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900 hover:bg-slate-100"
+            className="rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-medium text-blue-900 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loggingOut ? "Logging out..." : "Logout"}
           </button>
         </div>
 
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Total
+            </div>
+            <div className="mt-2 text-2xl font-bold text-slate-950">
+              {stats.total}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Pending
+            </div>
+            <div className="mt-2 text-2xl font-bold text-slate-950">
+              {stats.pending}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Approved
+            </div>
+            <div className="mt-2 text-2xl font-bold text-slate-950">
+              {stats.approved}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-blue-100 bg-white p-5 shadow-sm">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Rejected
+            </div>
+            <div className="mt-2 text-2xl font-bold text-slate-950">
+              {stats.rejected}
+            </div>
+          </div>
+        </div>
+
+        {errorMessage && (
+          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {errorMessage}
+          </div>
+        )}
+
         <div className="mt-10 space-y-6">
           {rfqs.length === 0 ? (
-            <div className="rounded-3xl border bg-white p-8 shadow-sm">
+            <div className="rounded-3xl border border-blue-100 bg-white p-8 shadow-sm">
               <p className="text-slate-600">No RFQs found.</p>
             </div>
           ) : (
@@ -137,14 +207,15 @@ export default function AdminRFQsClient() {
               const isApproved = rfq.status === "Approved";
               const isRejected = rfq.status === "Rejected";
               const isPending = rfq.status === "Pending review";
+              const attachmentHref = rfq.attachment_url || rfq.file_url;
 
               return (
                 <article
                   key={rfq.id}
-                  className="rounded-3xl border bg-white p-8 shadow-sm"
+                  className="rounded-3xl border border-blue-100 bg-white p-8 shadow-sm"
                 >
-                  <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-                    <div className="max-w-3xl">
+                  <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+                    <div className="max-w-4xl">
                       <div
                         className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium uppercase tracking-wide ${getStatusBadge(
                           rfq.status
@@ -153,12 +224,12 @@ export default function AdminRFQsClient() {
                         {rfq.status}
                       </div>
 
-                      <h2 className="mt-4 text-2xl font-semibold">
+                      <h2 className="mt-4 text-2xl font-semibold text-slate-950">
                         {rfq.title || `${rfq.service} – ${rfq.material} RFQ`}
                       </h2>
 
                       <div className="mt-2 text-sm text-slate-500">
-                        {rfq.country}
+                        {rfq.country || "—"}
                       </div>
 
                       <div className="mt-6 grid gap-3 text-sm text-slate-700 md:grid-cols-2">
@@ -193,23 +264,23 @@ export default function AdminRFQsClient() {
                         <div>
                           <span className="font-semibold">Created:</span>{" "}
                           {rfq.created_at
-                            ? new Date(rfq.created_at).toLocaleString()
+                            ? new Date(rfq.created_at).toLocaleString("hr-HR")
                             : "—"}
                         </div>
                       </div>
 
-                      <p className="mt-6 text-base leading-7 text-slate-600">
-                        {rfq.description}
-                      </p>
+                      <div className="mt-6 whitespace-pre-wrap rounded-2xl border border-blue-50 bg-slate-50 p-4 text-slate-600">
+                        {rfq.description || "No description provided."}
+                      </div>
 
-                      {rfq.file_url && (
+                      {attachmentHref && (
                         <a
-                          href={rfq.file_url}
+                          href={attachmentHref}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-4 inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm hover:bg-slate-100"
+                          className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-blue-900 transition hover:bg-blue-50"
                         >
-                          📎 Download drawing
+                          Download drawing
                         </a>
                       )}
                     </div>
@@ -224,7 +295,7 @@ export default function AdminRFQsClient() {
                             : "bg-green-600 text-white hover:bg-green-700"
                         }`}
                       >
-                        {updatingId === rfq.id && !isRejected
+                        {updatingId === rfq.id
                           ? "Updating..."
                           : isApproved
                           ? "Approved"
@@ -240,7 +311,7 @@ export default function AdminRFQsClient() {
                             : "bg-red-600 text-white hover:bg-red-700"
                         }`}
                       >
-                        {updatingId === rfq.id && !isApproved
+                        {updatingId === rfq.id
                           ? "Updating..."
                           : isRejected
                           ? "Rejected"
