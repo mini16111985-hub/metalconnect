@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
+
+const packageOptions = [
+  "Featured Directory",
+  "Homepage Featured Slot",
+  "Sponsored Banner",
+];
 
 export default function AdvertiseRequestPage() {
   const [form, setForm] = useState({
@@ -18,11 +24,17 @@ export default function AdvertiseRequestPage() {
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const packageOptions = [
-    "Featured Directory",
-    "Homepage Featured Slot",
-    "Sponsored Banner",
-  ];
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const selectedPackage = params.get("package");
+
+    if (selectedPackage && packageOptions.includes(selectedPackage)) {
+      setForm((prev) => ({
+        ...prev,
+        packageName: selectedPackage,
+      }));
+    }
+  }, []);
 
   const handleChange = (e) => {
     setForm((prev) => ({

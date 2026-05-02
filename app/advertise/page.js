@@ -89,14 +89,14 @@ export default function AdvertisePage() {
 
             <div className="mt-8 flex flex-wrap gap-4">
               <a
-                href="/contact"
+                href="/advertise-request"
                 className="rounded-2xl bg-blue-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-800"
               >
                 Request advertising →
               </a>
 
               <a
-                href="mailto:metalconnect.hr@gmail.com?subject=Advertising%20Inquiry%20%E2%80%93%20MetalConnect"
+                href="/advertise-request"
                 className="rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-medium text-blue-900 transition hover:bg-blue-50"
               >
                 Email us directly
@@ -191,7 +191,7 @@ export default function AdvertisePage() {
                 </ul>
 
                 <a
-                  href={`/contact?topic=${encodeURIComponent(pkg.name)}`}
+                  href={`/advertise-request?package=${encodeURIComponent(pkg.name)}`}
                   className={`mt-8 inline-block rounded-2xl px-5 py-3 text-sm font-medium transition ${
                     pkg.highlighted
                       ? "bg-blue-900 text-white hover:bg-blue-800"
@@ -277,14 +277,14 @@ export default function AdvertisePage() {
 
               <div className="mt-5 flex flex-wrap gap-3">
                 <a
-                  href="/contact"
+                  href="/advertise-request"
                   className="rounded-2xl bg-blue-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-800"
                 >
                   Request advertising →
                 </a>
 
                 <a
-                  href="mailto:metalconnect.hr@gmail.com?subject=Advertising%20Inquiry%20%E2%80%93%20MetalConnect"
+                  href="/advertise-request"
                   className="rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-medium text-blue-900 transition hover:bg-blue-50"
                 >
                   Contact by email
