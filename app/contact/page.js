@@ -135,7 +135,7 @@ export default function ContactPage() {
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <a
-                  href="mailto:metalconnect.hr@gmail.com?subject=Advertising%20Inquiry%20%E2%80%93%20MetalConnect"
+                  href="/advertise-request"
                   className="rounded-2xl bg-blue-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-800"
                 >
                   Start advertising inquiry →
